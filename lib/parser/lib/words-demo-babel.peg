@@ -1,0 +1,110 @@
+{
+    // Utility functions
+    function buildList(head, tail, index) {
+        return [head].concat(extractList(tail, index));
+    }
+
+
+    function extractList(list, index) {
+        const result = new Array(list.length);
+        let i;
+
+        for (i = 0; i < list.length; i++) {
+            result[i] = list[i][index];
+        }
+
+        return result;
+    }
+
+    function optionalList(value) {
+        return value !== null ? value : [];
+    }
+}
+
+Start
+    = __ program: Program __ { return program; }
+
+
+Program
+    = body: SourceElements ? {
+        return {
+            type: "File",
+            sourceType: "script",
+            directives: [],
+            program: {
+                type: "Program",
+                body: [{
+                    type: "CallExpression",
+                    "callee": {
+                        type: "MemberExpression",
+                        object: {
+                            type: "Identifier",
+                            name: "console"
+                        },
+                        property: {
+                            type: "Identifier",
+                            name: "log"
+                        },
+                        "computed": false
+                    },
+                    "arguments": optionalList(body)
+                }]
+            }
+        };
+    }
+
+SourceElements
+    = head: or tail: (__ or)* {
+        return buildList(head, tail, 1);
+    }
+
+or
+   = left:and "OR" right:or {
+        return {
+            type: "LogicalExpression",
+            operator: "||",
+            left: left,
+            right: right
+        }
+   }
+   / and
+
+and
+    = left:primary "AND" right:and {
+        return {
+            type: "LogicalExpression",
+            operator: "&&",
+            left: left,
+            right: right
+        }
+    }
+    / primary
+
+primary
+    = negation
+    / __ "(" __ or:or __ ")" __ {
+        return or;
+    }
+
+negation
+    = __ "NOT" word:word {
+        return {
+            type: "UnaryExpression",
+            operator: "!",
+            prefix: true,
+            argument: word
+        }
+    }
+    / word
+
+
+word
+    = __ letters:[^&|\- \(\)]+ __ {
+        return {
+            type: "Identifier",
+            name: letters.join('')
+        }
+    }
+
+__
+    = [ \t\n\r]*

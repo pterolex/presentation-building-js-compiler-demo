@@ -1,0 +1,37 @@
+start
+   = or
+
+or
+   = left:and "|" right:or {
+       return ["OR", left, right];
+    }
+   / and
+
+and
+    = left:primary "&" right:and {
+        return ["AND", left, right];
+    }
+    / primary
+
+primary
+    = negation
+    / __ "(" __ or:or __ ")" __ {
+        return or;
+    }
+
+negation
+    = __ "NOT" word:word {
+        return ["NOT", word];
+    }
+    / word
+
+
+word
+    = __ letters:[^&|\- \(\)]+ __ {
+        return letters.join("");
+    }
+
+// Whitespace
+__
+    = [ \t\n\r]*
+

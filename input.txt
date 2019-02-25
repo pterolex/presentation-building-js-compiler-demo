@@ -1,0 +1,1 @@
+NOT false OR ((NOT false) AND true)
